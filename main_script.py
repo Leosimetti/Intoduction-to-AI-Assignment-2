@@ -8,29 +8,15 @@ from additional.genetic_things import *
 
 root = Tk()
 root.withdraw()
+IMAGE_TO_WORK_ON = filedialog.askopenfilename()
 
-# os.chdir(r'C:\tmp\Genetic')
-
-IMAGE_TO_WORK_ON = filedialog.askopenfilename()  # r'kesya.jpg'
-print(IMAGE_TO_WORK_ON)
-PIXEL_SCALE = 100
-NUMBER_OF_FIGURES = 50  # round(WIDTH*HEIGHT/2)
-
-ATTR_MUTATION = 0.2
-MUTATION = 0.1
-
-GENERATIONS = 1
-POPULATION = 5
-
-
-## GOOD ones
-# NUMBER_OF_FIGURES = 5000#round(WIDTH*HEIGHT/2)
-#
-# ATTR_MUTATION = 0.2
-# MUTATION = 0.1
-#
-# GENERATIONS = 10
-# POPULATION = 50
+# GOOD ones
+NUMBER_OF_FIGURES = 5000  # round(WIDTH*HEIGHT/2)
+ATTR_MUTATION = 0.2  # individual attribute mutation chance
+MUTATION = 0.1  # creature mutation chance
+GENERATIONS = 10
+POPULATION = 50
+CHEATING_ALLOWED = True
 
 def draw_triangle(cr, points, pallet):
     r, g, b = [pallet[i] for i in range(3)]
@@ -75,34 +61,33 @@ def err(individual):
 def rand_attribute():
     sas = random_points_3(WIDTH, HEIGHT)
 
-    origin = sas[0]
-    Ox = origin[0]
-    Oy = origin[1]
-    src_color = list(source[Ox, Oy])
-    kek = [c / 255 for c in src_color]
-
-    # kek = random_pallet()
+    if CHEATING_ALLOWED:
+        origin = sas[0]
+        Ox = origin[0]
+        Oy = origin[1]
+        src_color = list(source[Ox, Oy])
+        kek = [c / 255 for c in src_color]
+    else:
+        kek = random_pallet()
     return [sas, kek]
 
 
 def mutate(individual, indpb):
     for i in range(len(individual)):
         if random.random() <= indpb:
-            individual[i] = rand_attribute()
-            # (individual[i])[1] = random_pallet()
+            if CHEATING_ALLOWED:
+                individual[i] = rand_attribute()
+            else:
+                (individual[i])[1] = random_pallet()
 
-            # points = (individual[i])[0]
-            # Xs = [j[0] for j in points]
-            # Ys = [j[1] for j in points]
-            # Ox = round((sum(Xs)) / 3)
-            # Oy = round((sum(Ys)) / 3)
-            # src_color = list(source[Ox, Oy])
-            # (individual[i])[1] = [c / 255 for c in src_color]
-            # else:
-            # Find the centroid
-            # print("\nSTART",individual[i])
+                points = (individual[i])[0]
+                Xs = [j[0] for j in points]
+                Ys = [j[1] for j in points]
+                Ox = round((sum(Xs)) / 3)
+                Oy = round((sum(Ys)) / 3)
+                src_color = list(source[Ox, Oy])
+                (individual[i])[1] = [c / 255 for c in src_color]
 
-            # print(individual[i], "END\n")
     return individual,
 
 
@@ -120,11 +105,6 @@ def initialize_deap():
 def do_the_thing(ind):
     toolbox = initialize_deap()
     pop = toolbox.population(n=POPULATION)
-
-    # if __name__ == "__main__":
-
-    # pool = multiprocessing.Pool()
-    # toolbox.register("map", pool.map)
 
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -151,8 +131,6 @@ img = cv2.imread(IMAGE_TO_WORK_ON)
 
 # Add alpha layer with OpenCV
 bgra = cv2.cvtColor(img, cv2.COLOR_BGR2BGRA)
-
-# Set alpha layer semi-transparent with Numpy indexing, B=0, G=1, R=2, A=3
 bgra[..., 3] = 255
 
 # Save result and rotate the picture so that there are no problems
@@ -166,7 +144,6 @@ im = np.asarray(pic)
 M = im.shape[0] // 4
 N = im.shape[1] // 4
 tiles = [im[x:x + M, y:y + N] for x in range(0, im.shape[0], M) for y in range(0, im.shape[1], N)]
-
 for i in range(0, len(tiles)):
     print(f"\n\nWORKING ON PART {i + 1}\n\n")
     source = tiles[i]

@@ -3,7 +3,7 @@ from operator import attrgetter
 from deap.algorithms import varAnd
 from additional.useful_things import *
 
-BEST_INDIVIDS = 5
+BEST_INDIVIDS = 3
 verbose = True
 
 
